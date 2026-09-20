@@ -2,7 +2,7 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Auto Insurance Deals | Fast, Friendly Coverage Quotes</title>
     <meta name="description" content="Connect with licensed insurance specialists today for fast, personal help with your coverage, policy updates, and quotes.">
     
@@ -34,21 +34,38 @@
             100%  {opacity: 1; transform: translateY(0)}
         }
 
-        /* Modal specific animations */
+        /* ===================================================================
+           MODAL
+           FIX: the modal wrapper is a full-screen fixed layer (z-index 100).
+           Previously, when "hidden" only its children were faded out, so the
+           invisible wrapper kept sitting on top of the whole page and
+           swallowed every tap/click (including all tel: links).
+           Now the wrapper itself becomes visibility:hidden + pointer-events:none
+           when closed, so the page underneath is fully clickable.
+           =================================================================== */
+        #quote-modal {
+            visibility: visible;
+            transition: visibility 0s linear 0s;
+        }
+        #quote-modal.modal-hidden {
+            visibility: hidden;
+            pointer-events: none;
+            transition: visibility 0s linear 0.3s; /* wait for fade-out, then hide */
+        }
         .modal-overlay {
-            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            transition: opacity 0.3s ease-out;
         }
         .modal-box {
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease-out;
         }
         .modal-hidden .modal-overlay {
             opacity: 0;
-            visibility: hidden;
             pointer-events: none;
         }
         .modal-hidden .modal-box {
             transform: scale(0.95) translateY(10px);
             opacity: 0;
+            pointer-events: none;
         }
 
         /* Logo styling - transparent background friendly */
@@ -82,36 +99,72 @@
                 height: 40px;
             }
         }
+
+        /* Ensure all tel links are clickable */
+        a[href^="tel:"] {
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Makes the whole service card a tap target for its "Call Now" link */
+        .stretched-link::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+        }
+
+        /* Sticky mobile call bar (respects iPhone home-indicator area) */
+        .sticky-call-bar {
+            box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.10);
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        }
+
+        /* Desktop "call from your phone" helper */
+        #call-toast { display: none; }
+        #call-toast.show { display: flex; }
+
+        /* Visible keyboard focus on every CTA */
+        a:focus-visible, button:focus-visible {
+            outline: 3px solid #f97316;
+            outline-offset: 2px;
+        }
+
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .fade-in-up { animation: none; opacity: 1; transform: none; }
+        }
     </style>
 </head>
 <body class="font-sans text-slate-700 bg-slate-50 antialiased">
 
     <!-- INSTANT POP-UP MODAL -->
-    <div id="quote-modal" class="modal-hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div id="quote-modal" class="modal-hidden fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
         <!-- Blurred Backdrop -->
         <div class="modal-overlay absolute inset-0 bg-slate-900/60 backdrop-blur-md" id="modal-backdrop"></div>
         
         <!-- Modal Content -->
         <div class="modal-box relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center border border-slate-100">
             <!-- Close Button -->
-            <button id="modal-close" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
+            <button id="modal-close" aria-label="Close" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
                 <i data-lucide="x" class="h-5 w-5"></i>
             </button>
 
             <!-- Logo -->
             <img src="logo.png" alt="Auto Insurance Deals" class="modal-logo mx-auto">
 
-            <h3 class="text-2xl font-bold text-slate-900 mb-2">Get Your Free Quote Now!</h3>
+            <h3 id="modal-title" class="text-2xl font-bold text-slate-900 mb-2">Get Your Free Quote Now!</h3>
             <p class="text-slate-600 mb-6">Talk to a licensed insurance specialist in minutes. No forms to fill out. No hassle.</p>
 
             <!-- Primary CTA -->
-            <a href="tel:8003416551" class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold px-6 py-3.5 rounded-xl transition shadow-lg hover:shadow-orange-500/30 w-full mb-3">
+            <a id="modal-call" href="tel:+18003416551" class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold px-6 py-3.5 rounded-xl transition shadow-lg hover:shadow-orange-500/30 w-full mb-3">
                 <i data-lucide="phone" class="h-5 w-5"></i>
                 Call (800) 341-6551
             </a>
-
-            <!-- Secondary CTA -->
-          
             
             <p class="text-xs text-slate-400 mt-4">Available today • 100% Secure • No obligation</p>
         </div>
@@ -128,18 +181,22 @@
                 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="#services" class="text-slate-600 hover:text-blue-600 font-medium transition">Services</a>
-                    <a href="#how-it-works" class="text-slate-600 hover:text-blue-600 font-medium transition">How It Works</a>
-                    <a href="#faq" class="text-slate-600 hover:text-blue-600 font-medium transition">FAQ</a>
-                    <a href="tel:8003416551" class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-md hover:shadow-lg">
+                    <a href="#services" class="nav-link text-slate-600 hover:text-blue-600 font-medium transition">Services</a>
+                    <a href="#how-it-works" class="nav-link text-slate-600 hover:text-blue-600 font-medium transition">How It Works</a>
+                    <a href="#faq" class="nav-link text-slate-600 hover:text-blue-600 font-medium transition">FAQ</a>
+                    <a href="tel:+18003416551" class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-md hover:shadow-lg">
                         <i data-lucide="phone" class="h-4 w-4"></i>
                         (800) 341-6551
                     </a>
                 </div>
 
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-btn" class="text-slate-600 hover:text-slate-900 focus:outline-none">
+                <!-- Mobile: call button + menu button -->
+                <div class="md:hidden flex items-center gap-3">
+                    <a href="tel:+18003416551" class="flex items-center gap-1.5 bg-orange-500 active:bg-orange-600 text-white text-sm font-bold px-4 py-2.5 rounded-full shadow-md">
+                        <i data-lucide="phone" class="h-4 w-4"></i>
+                        Call Now
+                    </a>
+                    <button id="mobile-menu-btn" aria-label="Open menu" class="text-slate-600 hover:text-slate-900 focus:outline-none">
                         <i data-lucide="menu" class="h-7 w-7"></i>
                     </button>
                 </div>
@@ -149,10 +206,10 @@
         <!-- Mobile Menu Panel -->
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100 absolute w-full">
             <div class="px-4 pt-2 pb-6 space-y-2 shadow-lg">
-                <a href="#services" class="block px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50 rounded-md">Services</a>
-                <a href="#how-it-works" class="block px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50 rounded-md">How It Works</a>
-                <a href="#faq" class="block px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50 rounded-md">FAQ</a>
-                <a href="tel:8003416551" class="block mt-4 text-center bg-orange-500 text-white px-5 py-3 rounded-lg font-bold text-lg">
+                <a href="#services" class="nav-link block px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50 rounded-md">Services</a>
+                <a href="#how-it-works" class="nav-link block px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50 rounded-md">How It Works</a>
+                <a href="#faq" class="nav-link block px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50 rounded-md">FAQ</a>
+                <a href="tel:+18003416551" class="block mt-4 text-center bg-orange-500 text-white px-5 py-3 rounded-lg font-bold text-lg">
                     Call (800) 341-6551
                 </a>
             </div>
@@ -174,11 +231,11 @@
                 We make insurance simple. Call now to speak with a real person who can help you find the right coverage at a great price.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4 fade-in-up delay-300">
-                <a href="tel:8003416551" class="inline-flex justify-center items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold px-8 py-4 rounded-full transition shadow-lg hover:shadow-orange-500/30 transform hover:-translate-y-0.5">
+                <a href="tel:+18003416551" class="inline-flex justify-center items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold px-8 py-4 rounded-full transition shadow-lg hover:shadow-orange-500/30 transform hover:-translate-y-0.5">
                     <i data-lucide="phone-call" class="h-5 w-5"></i>
                     Call (800) 341-6551
                 </a>
-                <a href="#contact" class="inline-flex justify-center items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-lg font-semibold px-8 py-4 rounded-full transition shadow-sm hover:shadow-md">
+                <a href="#contact" class="nav-link inline-flex justify-center items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-lg font-semibold px-8 py-4 rounded-full transition shadow-sm hover:shadow-md">
                     Request a Callback
                 </a>
             </div>
@@ -215,63 +272,63 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Service 1 -->
-                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                <div class="relative bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
                     <div class="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition">
                         <i data-lucide="car" class="h-7 w-7 text-blue-600 group-hover:text-white transition"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Car Insurance</h3>
                     <p class="text-slate-600 mb-6">Get great rates on car insurance. We'll help you find the right coverage for your vehicle.</p>
-                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                    <a href="tel:+18003416551" class="stretched-link text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all hover:underline">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
                 </div>
 
                 <!-- Service 2 -->
-                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                <div class="relative bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
                     <div class="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition">
                         <i data-lucide="home" class="h-7 w-7 text-blue-600 group-hover:text-white transition"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Home Insurance</h3>
                     <p class="text-slate-600 mb-6">Protect your home and family. We'll help you find the right coverage at a fair price.</p>
-                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                    <a href="tel:+18003416551" class="stretched-link text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all hover:underline">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
                 </div>
 
                 <!-- Service 3 -->
-                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                <div class="relative bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
                     <div class="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition">
                         <i data-lucide="briefcase" class="h-7 w-7 text-blue-600 group-hover:text-white transition"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Business Insurance</h3>
                     <p class="text-slate-600 mb-6">Protect your business. We'll help you understand your options and find the right coverage.</p>
-                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                    <a href="tel:+18003416551" class="stretched-link text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all hover:underline">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
                 </div>
 
                 <!-- Service 4 -->
-                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                <div class="relative bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
                     <div class="bg-orange-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-500 transition">
                         <i data-lucide="file-plus" class="h-7 w-7 text-orange-600 group-hover:text-white transition"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Get a New Quote</h3>
                     <p class="text-slate-600 mb-6">Looking for new insurance? We'll compare options to find you the best deal.</p>
-                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                    <a href="tel:+18003416551" class="stretched-link text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all hover:underline">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
                 </div>
 
                 <!-- Service 5 -->
-                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                <div class="relative bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
                     <div class="bg-orange-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-500 transition">
                         <i data-lucide="refresh-cw" class="h-7 w-7 text-orange-600 group-hover:text-white transition"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Update Your Policy</h3>
                     <p class="text-slate-600 mb-6">Need to make changes? Add a driver, update your address, or adjust your coverage.</p>
-                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                    <a href="tel:+18003416551" class="stretched-link text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all hover:underline">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
                 </div>
 
                 <!-- Service 6 -->
-                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                <div class="relative bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
                     <div class="bg-orange-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-500 transition">
                         <i data-lucide="credit-card" class="h-7 w-7 text-orange-600 group-hover:text-white transition"></i>
                     </div>
                     <h3 class="text-xl font-bold text-slate-900 mb-3">Billing Help</h3>
                     <p class="text-slate-600 mb-6">Questions about your bill? We'll help you understand your payments and due dates.</p>
-                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                    <a href="tel:+18003416551" class="stretched-link text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all hover:underline">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
                 </div>
             </div>
         </div>
@@ -284,7 +341,8 @@
                 <div>
                     <h2 class="text-3xl md:text-4xl font-bold mb-6">Why People Choose Us</h2>
                     <p class="text-slate-300 text-lg mb-8">We make insurance easy. No confusing forms. No long wait times. Just real people ready to help you find the right coverage.</p>
-                    <a href="tel:8003416551" class="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-full transition shadow-lg">
+                    <a href="tel:+18003416551" class="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-full transition shadow-lg">
+                        <i data-lucide="phone" class="h-5 w-5"></i>
                         Talk to an Expert
                     </a>
                 </div>
@@ -327,7 +385,7 @@
                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-blue-100 relative">
                     <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow-md">1</div>
                     <h3 class="text-xl font-bold text-slate-900 mt-4 mb-3">Call Us</h3>
-                    <p class="text-slate-600">Pick up the phone and call (800) 341-6551. A licensed expert will answer.</p>
+                    <p class="text-slate-600">Pick up the phone and <a href="tel:+18003416551" class="text-blue-600 font-bold hover:underline">call (800) 341-6551</a>. A licensed expert will answer.</p>
                 </div>
                 
                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-blue-100 relative">
@@ -341,6 +399,14 @@
                     <h3 class="text-xl font-bold text-slate-900 mt-4 mb-3">Get Help</h3>
                     <p class="text-slate-600">We'll explain your options and help you make the best choice.</p>
                 </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="mt-14">
+                <a href="tel:+18003416551" class="inline-flex justify-center items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold px-8 py-4 rounded-full transition shadow-lg hover:shadow-orange-500/30">
+                    <i data-lucide="phone-call" class="h-5 w-5"></i>
+                    Step 1: Call (800) 341-6551
+                </a>
             </div>
         </div>
     </section>
@@ -385,6 +451,14 @@
                     <p class="font-bold text-slate-900">- Marcus T., Quote Customer</p>
                 </div>
             </div>
+
+            <!-- CTA -->
+            <div class="text-center mt-12">
+                <a href="tel:+18003416551" class="inline-flex justify-center items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold px-8 py-4 rounded-full transition shadow-lg hover:shadow-orange-500/30">
+                    <i data-lucide="phone" class="h-5 w-5"></i>
+                    Call Now: (800) 341-6551
+                </a>
+            </div>
         </div>
     </section>
 
@@ -393,7 +467,7 @@
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Common Questions</h2>
-                <p class="text-lg text-slate-600">Can't find your answer? Call us and we'll help you personally.</p>
+                <p class="text-lg text-slate-600">Can't find your answer? <a href="tel:+18003416551" class="text-blue-600 font-bold hover:underline">Call us</a> and we'll help you personally.</p>
             </div>
             
             <div class="space-y-4">
@@ -403,7 +477,7 @@
                         <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="h-5 w-5 text-slate-500"></i></span>
                     </summary>
                     <div class="text-slate-600 px-6 pb-6">
-                        Just call (800) 341-6551. Our team will ask you a few questions and help you find the right coverage quickly.
+                        Just <a href="tel:+18003416551" class="text-blue-600 font-bold hover:underline">call (800) 341-6551</a>. Our team will ask you a few questions and help you find the right coverage quickly.
                     </div>
                 </details>
 
@@ -413,7 +487,7 @@
                         <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="h-5 w-5 text-slate-500"></i></span>
                     </summary>
                     <div class="text-slate-600 px-6 pb-6">
-                        Call us and we can help you make changes like adding a driver, updating your address, or changing your coverage.
+                        <a href="tel:+18003416551" class="text-blue-600 font-bold hover:underline">Call us</a> and we can help you make changes like adding a driver, updating your address, or changing your coverage.
                     </div>
                 </details>
 
@@ -423,7 +497,7 @@
                         <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="h-5 w-5 text-slate-500"></i></span>
                     </summary>
                     <div class="text-slate-600 px-6 pb-6">
-                        Call (800) 341-6551 for help with payments. We'll explain your options and answer any billing questions.
+                        <a href="tel:+18003416551" class="text-blue-600 font-bold hover:underline">Call (800) 341-6551</a> for help with payments. We'll explain your options and answer any billing questions.
                     </div>
                 </details>
 
@@ -434,6 +508,7 @@
                     </summary>
                     <div class="text-slate-600 px-6 pb-6">
                         Yes! All our specialists are fully licensed and trained to help you with your insurance needs.
+                        <a href="tel:+18003416551" class="text-blue-600 font-bold hover:underline">Call (800) 341-6551</a> to speak with one now.
                     </div>
                 </details>
             </div>
@@ -447,7 +522,7 @@
             <p class="text-blue-100 text-lg mb-10 max-w-2xl mx-auto">Don't wait. Call now to speak with a licensed expert who can help you find the right coverage at a great price.</p>
             
             <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
-                <a href="tel:8003416551" class="inline-flex justify-center items-center gap-2 bg-white text-blue-600 hover:bg-blue-50 text-lg font-bold px-8 py-4 rounded-full transition shadow-lg">
+                <a href="tel:+18003416551" class="inline-flex justify-center items-center gap-2 bg-white text-blue-600 hover:bg-blue-50 text-lg font-bold px-8 py-4 rounded-full transition shadow-lg">
                     <i data-lucide="phone" class="h-5 w-5"></i>
                     Call (800) 341-6551
                 </a>
@@ -455,8 +530,8 @@
 
             <!-- Simple Lead Capture Form -->
             <div class="bg-white text-slate-800 p-8 rounded-2xl shadow-2xl max-w-lg mx-auto text-left">
-                <h3 class="text-xl font-bold mb-4 text-center">Request a Callback</h3>
-                <form class="space-y-4" onsubmit="event.preventDefault(); alert('Thank you! This is a demo form. In a real site, this would send a lead.');">
+                <h3 id="callback-title" class="text-xl font-bold mb-4 text-center">Request a Callback</h3>
+                <form id="callback-form" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
                         <input type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="John Doe" required>
@@ -479,12 +554,25 @@
                     </button>
                     <p class="text-xs text-slate-500 text-center mt-3">By submitting, you agree to be contacted by a licensed specialist. Your information is secure.</p>
                 </form>
+
+                <!-- Shown after the form is submitted -->
+                <div id="form-success" class="hidden text-center py-2">
+                    <div class="mx-auto mb-3 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <i data-lucide="check" class="h-6 w-6 text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Thank you!</h3>
+                    <p class="text-slate-600 mb-5">We will call you back shortly. Need help right now?</p>
+                    <a href="tel:+18003416551" class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition shadow-md">
+                        <i data-lucide="phone" class="h-5 w-5"></i>
+                        Call (800) 341-6551
+                    </a>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+    <!-- Footer (extra bottom padding on mobile so the sticky call bar never covers content) -->
+    <footer class="bg-slate-900 text-slate-400 pt-12 pb-28 md:pb-12 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <div class="col-span-1 md:col-span-2">
@@ -497,16 +585,19 @@
                 <div>
                     <h4 class="text-white font-semibold mb-4">Quick Links</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#services" class="hover:text-white transition">Services</a></li>
-                        <li><a href="#how-it-works" class="hover:text-white transition">How It Works</a></li>
-                        <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="#services" class="nav-link hover:text-white transition">Services</a></li>
+                        <li><a href="#how-it-works" class="nav-link hover:text-white transition">How It Works</a></li>
+                        <li><a href="#faq" class="nav-link hover:text-white transition">FAQ</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="text-white font-semibold mb-4">Contact</h4>
                     <ul class="space-y-2 text-sm">
-                        <li class="flex items-center gap-2"><i data-lucide="phone" class="h-4 w-4"></i> (800) 341-6551</li>
-                       
+                        <li>
+                            <a href="tel:+18003416551" class="flex items-center gap-2 text-slate-400 hover:text-white transition">
+                                <i data-lucide="phone" class="h-4 w-4"></i> (800) 341-6551
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -516,10 +607,33 @@
         </div>
     </footer>
 
+    <!-- STICKY CALL BAR (mobile only) -->
+    <div class="sticky-call-bar md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 px-4 pt-3">
+        <a href="tel:+18003416551" class="flex items-center justify-center gap-2 bg-orange-500 active:bg-orange-600 text-white text-lg font-bold py-3.5 rounded-xl shadow-lg w-full">
+            <i data-lucide="phone-call" class="h-5 w-5"></i>
+            Call Now: (800) 341-6551
+        </a>
+    </div>
+
+    <!-- DESKTOP HELPER: shown if a computer can't place the call -->
+    <div id="call-toast" role="status" aria-live="polite" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] w-[calc(100%-2rem)] max-w-md items-center gap-3 bg-slate-900 text-white rounded-2xl shadow-2xl px-4 py-3">
+        <i data-lucide="phone" class="h-5 w-5 text-orange-400 flex-shrink-0"></i>
+        <p class="text-sm flex-1">Calling from a computer? Dial <strong class="select-all">(800) 341-6551</strong> from your phone.</p>
+        <button id="copy-number" class="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-3 py-1.5 rounded-lg transition">Copy</button>
+        <button id="toast-close" aria-label="Dismiss" class="text-slate-400 hover:text-white p-1">
+            <i data-lucide="x" class="h-4 w-4"></i>
+        </button>
+    </div>
+
     <!-- Scripts -->
     <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
+        // Initialize Lucide Icons (guarded: if the icon CDN is slow or blocked,
+        // the page and every call button still work)
+        try {
+            if (window.lucide) lucide.createIcons();
+        } catch (err) {
+            console.warn('Icons failed to load:', err);
+        }
 
         // Mobile Menu Toggle
         const btn = document.getElementById('mobile-menu-btn');
@@ -529,9 +643,25 @@
             menu.classList.toggle('hidden');
         });
 
-        menu.querySelectorAll('a').forEach(link => {
+        // Close mobile menu when clicking nav links
+        menu.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => {
                 menu.classList.add('hidden');
+            });
+        });
+
+        // Smooth scroll for in-page navigation links (#section only; tel: links are untouched)
+        document.querySelectorAll('.nav-link').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             });
         });
 
@@ -539,17 +669,19 @@
         const modal = document.getElementById('quote-modal');
         const modalClose = document.getElementById('modal-close');
         const modalBackdrop = document.getElementById('modal-backdrop');
-        const scrollToFormBtn = document.getElementById('modal-scroll-to-form');
+        const modalCall = document.getElementById('modal-call');
 
         // Function to open modal
         function openModal() {
             modal.classList.remove('modal-hidden');
+            modal.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
         }
 
         // Function to close modal
         function closeModal() {
             modal.classList.add('modal-hidden');
+            modal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = ''; // Restore background scrolling
         }
 
@@ -561,6 +693,11 @@
         // Close modal events
         modalClose.addEventListener('click', closeModal);
         modalBackdrop.addEventListener('click', closeModal);
+
+        // Tapping the modal's call button starts the call, then tidies the modal away
+        modalCall.addEventListener('click', () => {
+            setTimeout(closeModal, 300);
+        });
         
         // Close on Escape key
         document.addEventListener('keydown', (e) => {
@@ -569,13 +706,68 @@
             }
         });
 
-        // "Request callback instead" closes modal and scrolls to form
-        scrollToFormBtn.addEventListener('click', () => {
-            closeModal();
-            setTimeout(() => {
-                document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
-            }, 300);
+        // --- CALL LINKS ---
+        const PHONE_DISPLAY = '(800) 341-6551';
+        const toast = document.getElementById('call-toast');
+        const copyBtn = document.getElementById('copy-number');
+        const toastClose = document.getElementById('toast-close');
+        const isDesktopLike = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        let toastTimer;
+
+        function showToast() {
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(hideToast, 12000);
+        }
+        function hideToast() {
+            toast.classList.remove('show');
+        }
+
+        document.querySelectorAll('a[href^="tel:"]').forEach(link => {
+            link.addEventListener('click', () => {
+                // TODO: fire your call-conversion event here (gtag / fbq / dataLayer)
+
+                // Phones handle tel: natively. On computers with no calling app installed
+                // nothing happens, so if the browser still has focus a moment later,
+                // show the number with a Copy button instead of a dead click.
+                if (!isDesktopLike) return;
+                setTimeout(() => {
+                    if (document.hasFocus()) showToast();
+                }, 800);
+            });
         });
+
+        toastClose.addEventListener('click', hideToast);
+
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(PHONE_DISPLAY);
+            } catch (err) {
+                const t = document.createElement('textarea');
+                t.value = PHONE_DISPLAY;
+                document.body.appendChild(t);
+                t.select();
+                try { document.execCommand('copy'); } catch (e) {}
+                t.remove();
+            }
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+        });
+
+        // Form submission handler
+        const callbackForm = document.getElementById('callback-form');
+        const callbackTitle = document.getElementById('callback-title');
+        const formSuccess = document.getElementById('form-success');
+        if (callbackForm) {
+            callbackForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // NOTE: nothing is sent anywhere yet. Connect this to your CRM / form endpoint.
+                this.reset();
+                this.classList.add('hidden');
+                callbackTitle.classList.add('hidden');
+                formSuccess.classList.remove('hidden');
+            });
+        }
     </script>
 </body>
 </html>
