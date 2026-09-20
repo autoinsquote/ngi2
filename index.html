@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Insurance Deals | Fast, Friendly Coverage Quotes</title>
+    <meta name="description" content="Connect with licensed insurance specialists today for fast, personal help with your coverage, policy updates, and quotes.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom Styles for subtle animations -->
+    <style>
+        .fade-in-up { 
+            animation: fadeInUp 0.8s ease-out forwards; 
+            opacity: 0; 
+            transform: translateY(20px); 
+        }
+        @keyframes fadeInUp { 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] summary ~ * { animation: sweep .3s ease-in-out; }
+        @keyframes sweep {
+            0%    {opacity: 0; transform: translateY(-10px)}
+            100%  {opacity: 1; transform: translateY(0)}
+        }
+
+        /* Modal specific animations */
+        .modal-overlay {
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+        }
+        .modal-box {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease-out;
+        }
+        .modal-hidden .modal-overlay {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .modal-hidden .modal-box {
+            transform: scale(0.95) translateY(10px);
+            opacity: 0;
+        }
+
+        /* Logo styling - transparent background friendly */
+        .logo-img {
+            height: 55px;
+            width: auto;
+            object-fit: contain;
+            background: transparent;
+        }
+        .modal-logo {
+            height: 90px;
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 1rem;
+            background: transparent;
+        }
+        .footer-logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+            background: transparent;
+        }
+        @media (max-width: 768px) {
+            .logo-img {
+                height: 45px;
+            }
+            .modal-logo {
+                height: 70px;
+            }
+            .footer-logo {
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans text-slate-700 bg-slate-50 antialiased">
+
+    <!-- INSTANT POP-UP MODAL -->
+    <div id="quote-modal" class="modal-hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <!-- Blurred Backdrop -->
+        <div class="modal-overlay absolute inset-0 bg-slate-900/60 backdrop-blur-md" id="modal-backdrop"></div>
+        
+        <!-- Modal Content -->
+        <div class="modal-box relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center border border-slate-100">
+            <!-- Close Button -->
+            <button id="modal-close" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+
+            <!-- Logo -->
+            <img src="logo.png" alt="Auto Insurance Deals" class="modal-logo mx-auto">
+
+            <h3 class="text-2xl font-bold text-slate-900 mb-2">Get Your Free Quote Now!</h3>
+            <p class="text-slate-600 mb-6">Talk to a licensed insurance expert in minutes. No forms to fill out. No hassle.</p>
+
+            <!-- Primary CTA -->
+            <a href="tel:8003416551" class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold px-6 py-3.5 rounded-xl transition shadow-lg hover:shadow-orange-500/30 w-full mb-3">
+                <i data-lucide="phone" class="h-5 w-5"></i>
+                Call (800) 341-6551
+            </a>
+
+            <!-- Secondary CTA -->
+            <button id="modal-scroll-to-form" class="text-sm text-slate-500 hover:text-blue-600 font-medium underline decoration-slate-300 hover:decoration-blue-600 underline-offset-4 transition">
+                Or request a callback instead
+            </button>
+            
+            <p class="text-xs text-slate-400 mt-4">Available today • 100% Secure • No obligation</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/95 backdrop-blur-sm shadow-sm z-50 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <img src="logo.png" alt="Auto Insurance Deals" class="logo-img">
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#services" class="text-slate-600 hover:text-blue-600 font-medium transition">Services</a>
+                    <a href="#how-it-works" class="text-slate-600 hover:text-blue-600 font-medium transition">How It Works</a>
+                    <a href="#faq" class="text-slate-600 hover:text-blue-600 font-medium transition">FAQ</a>
+                    <a href="tel:8003416551" class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-md hover:shadow-lg">
+                        <i data-lucide="phone" class="h-4 w-4"></i>
+                        (800) 341-6551
+                    </a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-slate-600 hover:text-slate-900 focus:outline-none">
+                        <i data-lucide="menu" class="h-7 w-7"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu Panel -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-100 absolute w-full">
+            <div class="px-4 pt-2 pb-6 space-y-2 shadow-lg">
+                <a href="#services" class="block px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50 rounded-md">Services</a>
+                <a href="#how-it-works" class="block px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50 rounded-md">How It Works</a>
+                <a href="#faq" class="block px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-50 rounded-md">FAQ</a>
+                <a href="tel:8003416551" class="block mt-4 text-center bg-orange-500 text-white px-5 py-3 rounded-lg font-bold text-lg">
+                    Call (800) 341-6551
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-slate-100 -z-10"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-6 fade-in-up">
+                <i data-lucide="check-circle" class="h-4 w-4"></i>
+                Licensed Experts Ready to Help Today
+            </div>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight mb-6 fade-in-up delay-100">
+                Get Better Insurance Rates <span class="text-blue-600">Today</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 fade-in-up delay-200">
+                We make insurance simple. Call now to speak with a real person who can help you find the right coverage at a great price.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 fade-in-up delay-300">
+                <a href="tel:8003416551" class="inline-flex justify-center items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold px-8 py-4 rounded-full transition shadow-lg hover:shadow-orange-500/30 transform hover:-translate-y-0.5">
+                    <i data-lucide="phone-call" class="h-5 w-5"></i>
+                    Call (800) 341-6551
+                </a>
+                <a href="#contact" class="inline-flex justify-center items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-lg font-semibold px-8 py-4 rounded-full transition shadow-sm hover:shadow-md">
+                    Request a Callback
+                </a>
+            </div>
+            
+            <!-- Trust Badges -->
+            <div class="mt-12 pt-8 border-t border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto fade-in-up delay-300">
+                <div class="flex flex-col items-center gap-2">
+                    <i data-lucide="award" class="h-6 w-6 text-blue-600"></i>
+                    <span class="text-sm font-semibold text-slate-700">Licensed Experts</span>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <i data-lucide="zap" class="h-6 w-6 text-blue-600"></i>
+                    <span class="text-sm font-semibold text-slate-700">Fast Service</span>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <i data-lucide="lock" class="h-6 w-6 text-blue-600"></i>
+                    <span class="text-sm font-semibold text-slate-700">Secure & Private</span>
+                </div>
+                <div class="flex flex-col items-center gap-2">
+                    <i data-lucide="heart-handshake" class="h-6 w-6 text-blue-600"></i>
+                    <span class="text-sm font-semibold text-slate-700">Friendly Help</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">We Help With All Your Insurance Needs</h2>
+                <p class="text-lg text-slate-600 max-w-2xl mx-auto">Whether you need new insurance or want to change your current policy, we're here to help.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Service 1 -->
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                    <div class="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition">
+                        <i data-lucide="car" class="h-7 w-7 text-blue-600 group-hover:text-white transition"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Car Insurance</h3>
+                    <p class="text-slate-600 mb-6">Get great rates on car insurance. We'll help you find the right coverage for your vehicle.</p>
+                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                    <div class="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition">
+                        <i data-lucide="home" class="h-7 w-7 text-blue-600 group-hover:text-white transition"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Home Insurance</h3>
+                    <p class="text-slate-600 mb-6">Protect your home and family. We'll help you find the right coverage at a fair price.</p>
+                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                    <div class="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition">
+                        <i data-lucide="briefcase" class="h-7 w-7 text-blue-600 group-hover:text-white transition"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Business Insurance</h3>
+                    <p class="text-slate-600 mb-6">Protect your business. We'll help you understand your options and find the right coverage.</p>
+                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                </div>
+
+                <!-- Service 4 -->
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                    <div class="bg-orange-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-500 transition">
+                        <i data-lucide="file-plus" class="h-7 w-7 text-orange-600 group-hover:text-white transition"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Get a New Quote</h3>
+                    <p class="text-slate-600 mb-6">Looking for new insurance? We'll compare options to find you the best deal.</p>
+                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                </div>
+
+                <!-- Service 5 -->
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                    <div class="bg-orange-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-500 transition">
+                        <i data-lucide="refresh-cw" class="h-7 w-7 text-orange-600 group-hover:text-white transition"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Update Your Policy</h3>
+                    <p class="text-slate-600 mb-6">Need to make changes? Add a driver, update your address, or adjust your coverage.</p>
+                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                </div>
+
+                <!-- Service 6 -->
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:shadow-xl transition duration-300 group">
+                    <div class="bg-orange-100 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-500 transition">
+                        <i data-lucide="credit-card" class="h-7 w-7 text-orange-600 group-hover:text-white transition"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Billing Help</h3>
+                    <p class="text-slate-600 mb-6">Questions about your bill? We'll help you understand your payments and due dates.</p>
+                    <a href="tel:8003416551" class="text-blue-600 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Call Now <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="py-20 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Why People Choose Us</h2>
+                    <p class="text-slate-300 text-lg mb-8">We make insurance easy. No confusing forms. No long wait times. Just real people ready to help you find the right coverage.</p>
+                    <a href="tel:8003416551" class="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-full transition shadow-lg">
+                        Talk to an Expert
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                        <i data-lucide="clock" class="h-8 w-8 text-orange-400 mb-4"></i>
+                        <h4 class="font-bold text-lg mb-2">Quick Response</h4>
+                        <p class="text-slate-400 text-sm">Talk to a real person fast. No long hold times.</p>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                        <i data-lucide="graduation-cap" class="h-8 w-8 text-orange-400 mb-4"></i>
+                        <h4 class="font-bold text-lg mb-2">Licensed Experts</h4>
+                        <p class="text-slate-400 text-sm">Our team knows insurance and can help you.</p>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                        <i data-lucide="piggy-bank" class="h-8 w-8 text-orange-400 mb-4"></i>
+                        <h4 class="font-bold text-lg mb-2">Great Rates</h4>
+                        <p class="text-slate-400 text-sm">We find coverage that fits your budget.</p>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                        <i data-lucide="smile" class="h-8 w-8 text-orange-400 mb-4"></i>
+                        <h4 class="font-bold text-lg mb-2">Friendly Service</h4>
+                        <p class="text-slate-400 text-sm">We're here to help, not to sell you something.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-20 bg-blue-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">How It Works</h2>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-16">Getting insurance help is easy. Just follow these three simple steps.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                <!-- Connecting line for desktop -->
+                <div class="hidden md:block absolute top-1/4 left-0 w-full h-0.5 bg-blue-200 -z-10"></div>
+                
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-blue-100 relative">
+                    <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow-md">1</div>
+                    <h3 class="text-xl font-bold text-slate-900 mt-4 mb-3">Call Us</h3>
+                    <p class="text-slate-600">Pick up the phone and call (800) 341-6551. A licensed expert will answer.</p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-blue-100 relative">
+                    <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow-md">2</div>
+                    <h3 class="text-xl font-bold text-slate-900 mt-4 mb-3">Tell Us What You Need</h3>
+                    <p class="text-slate-600">Share your situation and ask any questions. We're here to listen.</p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-blue-100 relative">
+                    <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl shadow-md">3</div>
+                    <h3 class="text-xl font-bold text-slate-900 mt-4 mb-3">Get Help</h3>
+                    <p class="text-slate-600">We'll explain your options and help you make the best choice.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">What Our Customers Say</h2>
+                <div class="flex items-center justify-center gap-2 text-orange-500">
+                    <i data-lucide="star" class="h-5 w-5 fill-current"></i>
+                    <i data-lucide="star" class="h-5 w-5 fill-current"></i>
+                    <i data-lucide="star" class="h-5 w-5 fill-current"></i>
+                    <i data-lucide="star" class="h-5 w-5 fill-current"></i>
+                    <i data-lucide="star" class="h-5 w-5 fill-current"></i>
+                    <span class="text-slate-700 font-semibold ml-2">4.9/5 from happy customers</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100">
+                    <div class="flex text-orange-500 mb-4">
+                        <i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i>
+                    </div>
+                    <p class="text-slate-700 italic mb-6">"The person I spoke with answered all my questions clearly. I felt confident about my choice."</p>
+                    <p class="font-bold text-slate-900">- Jordan M., Car Insurance Customer</p>
+                </div>
+                
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100">
+                    <div class="flex text-orange-500 mb-4">
+                        <i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i>
+                    </div>
+                    <p class="text-slate-700 italic mb-6">"I needed to update my policy and it was so much easier than I thought it would be."</p>
+                    <p class="font-bold text-slate-900">- Alicia R., Policy Update Customer</p>
+                </div>
+                
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100">
+                    <div class="flex text-orange-500 mb-4">
+                        <i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i><i data-lucide="star" class="h-4 w-4 fill-current"></i>
+                    </div>
+                    <p class="text-slate-700 italic mb-6">"Friendly, fast, and really helpful. One call and I knew exactly what to do."</p>
+                    <p class="font-bold text-slate-900">- Marcus T., Quote Customer</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-20 bg-slate-50">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Common Questions</h2>
+                <p class="text-lg text-slate-600">Can't find your answer? Call us and we'll help you personally.</p>
+            </div>
+            
+            <div class="space-y-4">
+                <details class="group bg-white rounded-xl border border-slate-200 open:ring-2 open:ring-blue-100 transition">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer list-none p-6 text-slate-900">
+                        <span>How do I get an insurance quote?</span>
+                        <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="h-5 w-5 text-slate-500"></i></span>
+                    </summary>
+                    <div class="text-slate-600 px-6 pb-6">
+                        Just call (800) 341-6551. Our team will ask you a few questions and help you find the right coverage quickly.
+                    </div>
+                </details>
+
+                <details class="group bg-white rounded-xl border border-slate-200 open:ring-2 open:ring-blue-100 transition">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer list-none p-6 text-slate-900">
+                        <span>How do I change my current policy?</span>
+                        <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="h-5 w-5 text-slate-500"></i></span>
+                    </summary>
+                    <div class="text-slate-600 px-6 pb-6">
+                        Call us and we can help you make changes like adding a driver, updating your address, or changing your coverage.
+                    </div>
+                </details>
+
+                <details class="group bg-white rounded-xl border border-slate-200 open:ring-2 open:ring-blue-100 transition">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer list-none p-6 text-slate-900">
+                        <span>How do I pay my bill?</span>
+                        <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="h-5 w-5 text-slate-500"></i></span>
+                    </summary>
+                    <div class="text-slate-600 px-6 pb-6">
+                        Call (800) 341-6551 for help with payments. We'll explain your options and answer any billing questions.
+                    </div>
+                </details>
+
+                <details class="group bg-white rounded-xl border border-slate-200 open:ring-2 open:ring-blue-100 transition">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer list-none p-6 text-slate-900">
+                        <span>Are your agents licensed?</span>
+                        <span class="transition group-open:rotate-180"><i data-lucide="chevron-down" class="h-5 w-5 text-slate-500"></i></span>
+                    </summary>
+                    <div class="text-slate-600 px-6 pb-6">
+                        Yes! All our specialists are fully licensed and trained to help you with your insurance needs.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA / Contact -->
+    <section id="contact" class="py-20 bg-blue-600 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Get Started?</h2>
+            <p class="text-blue-100 text-lg mb-10 max-w-2xl mx-auto">Don't wait. Call now to speak with a licensed expert who can help you find the right coverage at a great price.</p>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                <a href="tel:8003416551" class="inline-flex justify-center items-center gap-2 bg-white text-blue-600 hover:bg-blue-50 text-lg font-bold px-8 py-4 rounded-full transition shadow-lg">
+                    <i data-lucide="phone" class="h-5 w-5"></i>
+                    Call (800) 341-6551
+                </a>
+            </div>
+
+            <!-- Simple Lead Capture Form -->
+            <div class="bg-white text-slate-800 p-8 rounded-2xl shadow-2xl max-w-lg mx-auto text-left">
+                <h3 class="text-xl font-bold mb-4 text-center">Request a Callback</h3>
+                <form class="space-y-4" onsubmit="event.preventDefault(); alert('Thank you! This is a demo form. In a real site, this would send a lead.');">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                        <input type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="John Doe" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                        <input type="tel" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="(555) 123-4567" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">How can we help?</label>
+                        <select class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            <option>New Insurance Quote</option>
+                            <option>Update Existing Policy</option>
+                            <option>Billing Assistance</option>
+                            <option>Other Coverage Questions</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition shadow-md mt-2">
+                        Get a Callback
+                    </button>
+                    <p class="text-xs text-slate-500 text-center mt-3">By submitting, you agree to be contacted by a licensed specialist. Your information is secure.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="col-span-1 md:col-span-2">
+                    <!-- Logo with light background container for visibility on dark footer -->
+                    <div class="mb-4 inline-block bg-white rounded-lg p-3 shadow-sm">
+                        <img src="logo.png" alt="Auto Insurance Deals" class="footer-logo">
+                    </div>
+                    <p class="text-sm max-w-xs">We make insurance simple with fast, friendly help from licensed experts.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#services" class="hover:text-white transition">Services</a></li>
+                        <li><a href="#how-it-works" class="hover:text-white transition">How It Works</a></li>
+                        <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Contact</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center gap-2"><i data-lucide="phone" class="h-4 w-4"></i> (800) 341-6551</li>
+                        <li class="flex items-center gap-2"><i data-lucide="mail" class="h-4 w-4"></i> help@autoinsurancedeals.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 pt-8 text-sm text-center">
+                <p>© 2026 Auto Insurance Deals. All rights reserved. Auto Insurance Deals is a comparison service and is not an insurance carrier; rates and offers are provided by third-party partners.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mobile Menu Toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        menu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.add('hidden');
+            });
+        });
+
+        // --- MODAL LOGIC ---
+        const modal = document.getElementById('quote-modal');
+        const modalClose = document.getElementById('modal-close');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const scrollToFormBtn = document.getElementById('modal-scroll-to-form');
+
+        // Function to open modal
+        function openModal() {
+            modal.classList.remove('modal-hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        // Function to close modal
+        function closeModal() {
+            modal.classList.add('modal-hidden');
+            document.body.style.overflow = ''; // Restore background scrolling
+        }
+
+        // Show modal instantly on page load (with a tiny 200ms delay for smooth rendering)
+        window.addEventListener('load', () => {
+            setTimeout(openModal, 200);
+        });
+
+        // Close modal events
+        modalClose.addEventListener('click', closeModal);
+        modalBackdrop.addEventListener('click', closeModal);
+        
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('modal-hidden')) {
+                closeModal();
+            }
+        });
+
+        // "Request callback instead" closes modal and scrolls to form
+        scrollToFormBtn.addEventListener('click', () => {
+            closeModal();
+            setTimeout(() => {
+                document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+        });
+    </script>
+</body>
+</html>
